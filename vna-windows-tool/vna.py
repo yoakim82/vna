@@ -535,16 +535,16 @@ class FigureTab:
             pngImageB64String += base64.b64encode(pngImage.getvalue()).decode('utf8')
 
             #return render_template("image.html", image=pngImage)
-            update_smith_web(pngImageB64String)
+            return update_smith_web(pngImageB64String)
         else:
             self.plot_smith()
             pngImage = io.BytesIO()
             #pngImage = "templates/gurka.png"
-            self.canvas.print_figure(img=pngImage)
+            self.canvas.print_figure(pngImage)
             #print(pngImage)
             pngImageB64String = "data:image/png;base64,"
             pngImageB64String += base64.b64encode(pngImage.getvalue()).decode('utf8')
-            update_smith_web(img=pngImageB64String)
+            return update_smith_web(img=pngImageB64String)
             #return render_template("image.html") #pngImageB64String)
 
     def plot_imp(self):
