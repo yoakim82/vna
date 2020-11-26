@@ -117,13 +117,46 @@ class Measurement:
         print('start: ' + str(self.start) + ', stop: ' + str(self.stop) + ', size: ' + str(self.size))
 
 
-flaskApp = Flask(__name__)
+#flaskApp = Flask(__name__)
+import traceback
+from logging import getLogger
+from werkzeug.exceptions import HTTPException
+from flask import jsonify, request
+logger = getLogger(__name__)
+
+class Image():
+    def __init__(self, img=None):
+        if img:
+            self.img = img
+
+    def set(self, img):
+        self.img = img
+
+    def get(self):
+        return self.img
+
+
+latestImage = Image()
+
+
+@flaskApp.errorhandler(Exception)
+def handle_error(e):
+    traceback.print_exception(type(e), e, e.__traceback__)
+    logger.error(e)
+    logger.info("got req: {}, data: {}, form: {}, args: {}".format(request, request.data, request.form, request.args))
+    code = 500
+    if isinstance(e, HTTPException):
+        code = e.code
+    return jsonify(error=str(e), status=code), code
 
 
 @flaskApp.route("/smith", methods=["GET"])
-def update_smith_web(img):
+def update_smith_web():
     #stuff = "<h2 style='text-align: center'>Welcome to Python Flask Web Server, <img src='templates/gurka.png'</img>"
-    return render_template("image.html", image=img)
+
+    pngImageB64String = "data:image/png;base64,"
+    pngImageB64String += base64.b64encode(latestImage.get().getvalue()).decode('utf8')
+    return render_template("image.html", image=pngImageB64String)
 
 
 class FigureTab:
@@ -531,20 +564,18 @@ class FigureTab:
             # self.canvas(self.figure).print_png(pngImage)
             self.canvas.print_figure(pngImage)
 
-            pngImageB64String = "data:image/png;base64,"
-            pngImageB64String += base64.b64encode(pngImage.getvalue()).decode('utf8')
-
             #return render_template("image.html", image=pngImage)
-            return update_smith_web(pngImageB64String)
+            #update_smith_web(img=pngImage)
+            latestImage.set(img=pngImage)
         else:
             self.plot_smith()
             pngImage = io.BytesIO()
             #pngImage = "templates/gurka.png"
             self.canvas.print_figure(pngImage)
             #print(pngImage)
-            pngImageB64String = "data:image/png;base64,"
-            pngImageB64String += base64.b64encode(pngImage.getvalue()).decode('utf8')
-            return update_smith_web(img=pngImageB64String)
+
+            #update_smith_web(img=pngImage)
+            latestImage.set(img=pngImage)
             #return render_template("image.html") #pngImageB64String)
 
     def plot_imp(self):
