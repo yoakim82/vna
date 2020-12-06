@@ -135,9 +135,7 @@ class Image():
     def get(self):
         return self.img
 
-
 latestImage = Image()
-
 
 @flaskApp.errorhandler(Exception)
 def handle_error(e):
@@ -157,6 +155,10 @@ def update_smith_web():
 
     action = request.args.get('action')
     var = "I like gurka: {}".format(action)
+    if action != '':
+        buttonEvent.set(action)
+        print("pressed button {}".format(action))
+
 
     pngImageB64String = "data:image/png;base64,"
     pngImageB64String += base64.b64encode(latestImage.get().getvalue()).decode('utf8')
@@ -1078,11 +1080,28 @@ class VNA(QMainWindow, Ui_VNA):
         self.write_s2p(self.gain_open(self.dut.freq))
 
 
+class HtmlEvent():
+    def __init__(self, vna: VNA):
+        self.action = None
+        self.vna = vna
+
+    def set(self, action):
+        self.action = action
+        if action == 'start':
+            self.vna.sweep_auto()
+        elif action == 'stop':
+            self.vna.cancel()
+        elif action == 'single':
+            self.vna.sweep('dut')
+
+
+
 warnings.filterwarnings('ignore')
 app = QApplication(sys.argv)
 webapp = FlaskThread(flaskApp)
 app.aboutToQuit.connect(webapp.terminate)
 window = VNA()
+buttonEvent = HtmlEvent(window)
 window.update_tab()
 window.show()
 webapp.start()
