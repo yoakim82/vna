@@ -153,10 +153,14 @@ def handle_error(e):
 @flaskApp.route("/smith", methods=["GET"])
 def update_smith_web():
     #stuff = "<h2 style='text-align: center'>Welcome to Python Flask Web Server, <img src='templates/gurka.png'</img>"
+    var = ""
+
+    action = request.args.get('action')
+    var = "I like gurka: {}".format(action)
 
     pngImageB64String = "data:image/png;base64,"
     pngImageB64String += base64.b64encode(latestImage.get().getvalue()).decode('utf8')
-    return render_template("image.html", image=pngImageB64String)
+    return render_template("image.html", image=pngImageB64String, var=var)
 
 
 class FigureTab:
